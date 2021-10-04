@@ -1,0 +1,31 @@
+h1{
+    color: blue; !important
+}
+a{
+    text-decoration: none;
+}
+.main-sidebar{
+    background-color: #4682B4; !important
+}
+.sidebar .nav-item{
+/*    border: 1px solid black;*/
+    border-radius: 5px;
+}
+.sidebar .nav-item:hover{
+    background-color: #3f698c;
+    z-index: -1;
+}
+.brand-link .brand-text{
+    color: #fff;
+    border: 1px solid black;
+}
+.nav-icon, #label{
+    color: white; !important
+}
+.d-block{
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: auto;
+}
+
