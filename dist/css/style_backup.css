@@ -1,0 +1,466 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand');
+
+body{
+    font-family: 'Quicksand', sans-serif;
+    box-sizing: content-box;
+}
+h3{
+    font-family: 'Lato' !important;
+}
+a{
+    text-decoration: none;
+}
+.main-sidebar{
+    background-color: #4682B4 !important; 
+}
+.sidebar .nav-item{
+/*    border: 1px solid black;*/
+    border-radius: 5px;
+}
+.sidebar .nav-item:hover{
+    background-color: #3f698c !important; 
+}
+.brand-link .brand-text{
+    color: #fff;
+    border: 1px solid black;
+}
+.nav-icon, #label{
+    color: white !important; 
+}
+.d-block{
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: auto;
+}
+.dataTables_filter{
+    float: right;
+    margin-bottom: 20px !important;
+}
+.dataTables_filter > label{
+    margin-bottom: 0px !important;
+}
+.dataTables_filter > label > input{
+    border-radius: 5px;
+    border: .5px solid black;
+    margin-left: 10px;
+    margin-bottom: 0px !important;
+}
+.dt-buttons{
+    position: absolute;
+}
+.dt-buttons, .buttons-copy, .buttons-excel, .buttons-csv, .buttons-pdf{
+    margin: 0 !important;
+}
+
+#table{
+    margin: 0 !mportant;
+}
+#table td{
+    padding: 0 !important;
+    vertical-align: middle !important;
+    border-top: 1px solid #dee2e6;
+}
+
+#table th{
+    font-size: .9rem !important;
+    font-family: 'Lato', sans-serif;
+}
+.loading-gif{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+}
+/*SOH Report*/
+@media only screen and (max-width: 600px) {
+    
+
+    .dt-buttons{
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+    .dt-buttons, .buttons-copy, .buttons-excel, .buttons-csv, .buttons-pdf{
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+    .dataTables_filter{
+        width: 100%; 
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;   
+    }
+    #soh{
+        border: 0;
+    }
+		/* Hide table headers (but not display: none;, for accessibility) */
+    thead tr{ 
+        margin-top: 10px;
+        display: none;
+    }
+    thead{
+        position: relative;
+        margin-top: 50px;
+    }
+
+    tr {
+      margin: 0 0 1rem 0;
+    }
+      
+    tr:nth-child(odd) {
+      background: #ccc;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 100%;
+    }
+
+    td:before {
+        position: relative;
+        top: 0;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 800;
+    }
+    tfoot{
+        display: none;
+    }
+
+    td:nth-of-type(1):before { content: "Client SKU: "; }
+    td:nth-of-type(2):before { content: "Item Description: "; }
+    td:nth-of-type(3):before { content: "Quantity: "; }
+    td:nth-of-type(4):before { content: "Weight: "; }
+    td:nth-of-type(5):before { content: "UOM: "; }
+    td:nth-of-type(6):before { content: "ItemStatus: "; }
+    td:nth-of-type(7):before { content: "Expiry: "; }
+    td:nth-of-type(8):before { content: "Batch No.: "; }
+    td:nth-of-type(9):before { content: "Production Date: "; }
+    td:nth-of-type(10):before { content: "CV Number: "; }
+    td:nth-of-type(11):before { content: "Other Reference: "; }
+    td:nth-of-type(12):before { content: "Pallet ID: "; }
+    td:nth-of-type(13):before { content: "Location: "; }
+}
+
+/*Ageing Report*/
+@media only screen and (max-width: 600px) {
+    
+    .dt-buttons{
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+    .dt-buttons, .buttons-copy, .buttons-excel, .buttons-csv, .buttons-pdf{
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+    .dataTables_filter{
+        width: 100%; 
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;   
+    }
+    #ageing{
+        border: 0;
+    }
+		/* Hide table headers (but not display: none;, for accessibility) */
+    thead tr{ 
+        margin-top: 10px;
+        display: none;
+    }
+    thead{
+        position: relative;
+        margin-top: 50px;
+    }
+
+    tr {
+      margin: 0 0 1rem 0;
+    }
+      
+    tr:nth-child(odd) {
+      background: #ccc;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 100%;
+    }
+
+    td:before {
+        position: relative;
+        top: 0;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 800;
+    }
+    tfoot{
+        display: none;
+    }
+
+    td:nth-of-type(1):before { content: "Item Code: "; }
+    td:nth-of-type(2):before { content: "Item Description: "; }
+    td:nth-of-type(3):before { content: "UOM: "; }
+    td:nth-of-type(4):before { content: "Quantity: "; }
+    td:nth-of-type(5):before { content: "Weight: "; }
+    td:nth-of-type(6):before { content: "CV Number: "; }
+    td:nth-of-type(6):before { content: "Other References: "; }
+    td:nth-of-type(7):before { content: "Batch/Lot: "; }
+    td:nth-of-type(8):before { content: "Batch No.: "; }
+    td:nth-of-type(9):before { content: "Expiration Date: "; }
+    td:nth-of-type(10):before { content: "Expiring in Days: "; }
+
+}
+
+/*DT Report*/
+@media only screen and (max-width: 600px) {
+    
+    .dt-buttons{
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+    .dt-buttons, .buttons-copy, .buttons-excel, .buttons-csv, .buttons-pdf{
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+    .dataTables_filter{
+        width: 100%; 
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;   
+    }
+    #DTR{
+        border: 0;
+    }
+		/* Hide table headers (but not display: none;, for accessibility) */
+    thead tr{ 
+        margin-top: 10px;
+        display: none;
+    }
+    thead{
+        position: relative;
+        margin-top: 50px;
+    }
+
+    tr {
+      margin: 0 0 1rem 0;
+    }
+      
+    tr:nth-child(odd) {
+      background: #ccc;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 100%;
+    }
+
+    td:before {
+        position: relative;
+        top: 0;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 800;
+    }
+    tfoot{
+        display: none;
+    }
+
+    td:nth-of-type(1):before { content: "Date: "; }
+    td:nth-of-type(2):before { content: "Control No.: "; }
+    td:nth-of-type(3):before { content: "JO No.: "; }
+    td:nth-of-type(4):before { content: "Transaction Type: "; }
+    td:nth-of-type(5):before { content: "Company Name: "; }
+    td:nth-of-type(6):before { content: "Quantity: "; }
+    td:nth-of-type(6):before { content: "Weight: "; }
+    td:nth-of-type(7):before { content: "Pallets In/Out: "; }
+    td:nth-of-type(8):before { content: "Container: "; }
+    td:nth-of-type(9):before { content: "Checker: "; }
+    td:nth-of-type(10):before { content: "Remarks: "; }
+    td:nth-of-type(10):before { content: "Actions: "; }
+
+}
+
+/*Ageing Report*/
+@media only screen and (max-width: 600px) {
+    
+    .dt-buttons{
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+    .dt-buttons, .buttons-copy, .buttons-excel, .buttons-csv, .buttons-pdf{
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+    .dataTables_filter{
+        width: 100%; 
+        position: relative;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px !important;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;   
+    }
+    #GM_table{
+        border: 0;
+    }
+		/* Hide table headers (but not display: none;, for accessibility) */
+    thead tr{ 
+        margin-top: 10px;
+        display: none;
+    }
+    thead{
+        position: relative;
+        margin-top: 50px;
+    }
+
+    tr {
+      margin: 0 0 1rem 0;
+    }
+      
+    tr:nth-child(odd) {
+      background: #ccc;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 100%;
+    }
+
+    td:before {
+        position: relative;
+        top: 0;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 800;
+    }
+    tfoot{
+        display: none;
+    }
+
+    td:nth-of-type(1):before { content: "Inbound: "; }
+    td:nth-of-type(2):before { content: "Quantity: "; }
+    td:nth-of-type(3):before { content: "Weight: "; }
+    td:nth-of-type(4):before { content: "Outbound: "; }
+    td:nth-of-type(5):before { content: "Quantity: "; }
+    td:nth-of-type(6):before { content: "Weight: "; }
+    td:nth-of-type(6):before { content: "Control Number: "; }
+    td:nth-of-type(7):before { content: "Batch: "; }
+    td:nth-of-type(8):before { content: "Other Reference: "; }
+    td:nth-of-type(9):before { content: "Date: "; }
+}
+
+/*Dashboard View*/
+@media only screen and (max-width: 600px) {
+
+    table, thead, tbody, th, td, tr {
+        display: block;   
+    }
+    #table{
+        border: 0;
+    }
+    #summary{
+        margin-bottom: 3rem;
+    }
+		/* Hide table headers (but not display: none;, for accessibility) */
+    thead tr{ 
+        margin-top: 10px;
+        display: none;
+    }
+    thead{
+        position: relative;
+        margin-top: 50px;
+    }
+
+    tr {
+      margin: 0 0 1rem 0;
+    }
+      
+    tr:nth-child(odd) {
+      background: #ccc;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 100%;
+        text-align: start !important;
+        
+    }
+
+    td:before {
+        position: relative;
+        top: 0;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: 800;
+        padding-left: 20px !important;
+    }
+    tfoot{
+        display: none;
+    }
+    td:nth-of-type(1):before { content: ""; }
+    td:nth-of-type(2):before { content: "January: "; }
+    td:nth-of-type(3):before { content: "February: "; }
+    td:nth-of-type(4):before { content: "March: "; }
+    td:nth-of-type(5):before { content: "April: "; }
+    td:nth-of-type(6):before { content: "May: "; }
+    td:nth-of-type(7):before { content: "June: "; }
+    td:nth-of-type(8):before { content: "July: "; }
+    td:nth-of-type(9):before { content: "August: "; }
+    td:nth-of-type(10):before { content: "September: "; }
+    td:nth-of-type(11):before { content: "October: "; }
+    td:nth-of-type(12):before { content: "November: "; }
+    td:nth-of-type(13):before { content: "December: "; }
+    td:nth-of-type(14):before { content: "Total: "; }
+
+
+}
+
+/*Venson CSS*/
+.cus_id{
+display: none;
+}
+
+.filter{
+    width: 300px;
+}
+/*Venson CSS*/

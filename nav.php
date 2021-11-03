@@ -7,13 +7,13 @@
       </a>
     </li>
     <li class="nav-item mb-2">
-      <a href="#" class="nav-link">
+      <a href="receiving.php" class="nav-link">
         <i class="nav-icon fas fa-inbox"></i>
         <p id="label">Receiving</p>
       </a>
     </li>
     <li class="nav-item mb-2">
-      <a href="#" class="nav-link">
+      <a href="order.php" class="nav-link">
         <i class="nav-icon fas fa-dice-d6"></i>
         <p id="label">
           Orders
@@ -33,6 +33,14 @@
         <i class="nav-icon fas fa-cog"></i>
         <p id="label">
           Settings
+        </p>
+      </a>
+    </li>
+    <li class="nav-item mb-2">
+      <a href="logout.php" class="nav-link">
+        <i class="nav-icon fas fa-sign-out-alt"></i>
+        <p id="label">
+          Logout
         </p>
       </a>
     </li>
