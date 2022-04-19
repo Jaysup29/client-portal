@@ -2,9 +2,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato');
 @import url('https://fonts.googleapis.com/css2?family=Quicksand');
 
+#plannerorderview::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+ 
+#plannerorderview::-webkit-scrollbar-track {
+    background-color: #e4e4e4;
+    border-radius: 100px;
+}
+ 
+#plannerorderview::-webkit-scrollbar-thumb {
+    background-color: #bfbfbf;
+    border-radius: 100px;
+}
+
+#plannerorderview{
+    overflow-x: hidden !important;
+}
+
 body{
     font-family: 'Quicksand', sans-serif;
     box-sizing: content-box;
+    font-weight: 400 !important;
+    overflow-x: hidden !important;
 }
 h3{
     font-family: 'Lato' !important;
@@ -39,9 +60,6 @@ a{
     background-color: #255be6;
     border: 0;
     border-radius: 0px 3px 3px 0px !important;
-}
-#planner, #frm_ecommerce{
-    font-weight: 700;
 }
 
     /*Simple css to style it like a toggle switch to dark mode*/
@@ -116,9 +134,19 @@ input:checked + .slider:before {
 /* disabling inputs */
 .disabled{
     opacity: 0.6;
-    cursor: not-allowed;
     pointer-events: none;
 }
+
+#tooltiptext
+{
+    font-size: .7rem;
+}
+
+.invi
+{
+    visibility: hidden;
+}
+
 
 #receivingitemssummary thead th
 {
@@ -179,7 +207,7 @@ input:checked + .slider:before {
     margin-top: 5px !important;
     font-weight: 500 !important;
     display: none;
-}l
+}
 
 .tabledit-edit-button > span.glyphicon::before{
     content: "Edit";
@@ -201,13 +229,50 @@ input:checked + .slider:before {
     display: none;
 }
 
+#orderedItems_wrapper
+{
+    padding: 0px !important;
+}
+
+#orderedItems_info
+{
+    display: none !important;
+}
+
+#registered_users_info
+{
+    display: none !important;
+}
+
+#registered_users_paginate
+{
+    display: none !important;
+}
+#registered_stores_info
+{
+    display: none !important;
+}
+#registered_stores_paginate
+{
+    display: none !important;
+}
+.card.btn
+{
+    font-weight: 500;
+}
+.card.btn:hover
+{
+    background-color: #007bff;
+    color: #ffffff;
+}
+
 /* #receivingitemsummary_paginate
 {
     border: 1px solid blue !important;
 } */
 
 
-#receivingitemsummary_previous, span > a.paginate_button, #receivingitemsummary_next
+/* #receivingitemsummary_previous, span > a.paginate_button, #receivingitemsummary_next
 {
     border: 1px solid #ffffff !important;
     background-color: #dee2e6 !important;
@@ -231,9 +296,8 @@ input:checked + .slider:before {
     background-color: #007bff !important;
     padding: 3px 5px 3px 5px !important;
     text-decoration: none !important;
-    color: white;
-    
-}
+    color: white;   
+} */
 div.dataTables_wrapper div.dataTables_filter
 {
     margin: 10px 10px 0px 10px;
@@ -252,6 +316,102 @@ div.dataTables_wrapper div.dataTables_length{
     position: relative;
     float: right;
 }
+
+div.p-1.border.bg-white.shadow-sm.rounded.text-center.fs-4
+{
+    font-weight: 600;
+}
+
+.table>:not(caption)>*>* 
+{
+    border: 0 !important;
+}
+
+#orderedItems_previous, span > a.paginate_button, #orderedItems_next
+{
+    border: 1px solid #ffffff !important;
+    background-color: #dee2e6 !important;
+    padding: 3px 5px 3px 5px !important;
+    text-decoration: none !important;
+    color: #1f2d3d;
+}
+#orderedItems_previous
+{
+    border-radius: 7px 0px 0px 7px !important;
+}
+
+#orderedItems_next
+{
+    border-radius: 0px 7px 7px 0px !important;
+}
+#orderedItems_previous, span > a.paginate_button, #orderedItems_next:hover
+{
+    border: 1px solid #ffffff !important;
+    background-color: #007bff !important;
+    padding: 3px 5px 3px 5px !important;
+    text-decoration: none !important;
+    color: white;   
+}
+
+#orderedItems.table-striped>tbody>tr:nth-of-type(odd)
+{
+    --bs-table-accent-bg: #EFF6FF !important;
+}
+
+#ordlistable.table-striped>tbody>tr:nth-of-type(odd) {
+    --bs-table-accent-bg: #EFF6FF !important;
+}
+
+table>tbody#ORDlist_table>tr:nth-child(odd):hover
+{
+    background-color: #EFF6FF !important;
+}
+
+.toast-container{
+    z-index: 100000;
+}
+
+div.steps.clearfix
+{
+    display: none !important;
+}
+
+/* div.actions.clearfix
+{
+    border: 1px solid black;
+} */
+div.actions.clearfix ul
+{
+    list-style-type: none; 
+    margin: 0;
+    padding: 0;
+    float: right;
+}
+
+div.actions.clearfix ul li
+{
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px 5px 10px;
+    background-color: #007bff;
+    border-radius: 8%;
+    
+}
+div.actions.clearfix ul li a
+{
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+}
+
+.select2-container .select2-selection--single{
+    height:34px !important;
+}
+.select2-container--default .select2-selection--single{
+    border: 1px solid #ccc !important; 
+    border-radius: 0px !important; 
+}
+
 
 /*Media Queries*/
 
@@ -332,7 +492,10 @@ div.dataTables_wrapper div.dataTables_length{
         display: none;
     }
 }
-
+label:not(.form-check-label):not(.custom-file-label)
+{
+    font-weight: 400;
+}
 
 /*Venson CSS*/
 .cus_id{
@@ -368,3 +531,4 @@ display: none;
   }
 }
 /*Venson CSS*/
+

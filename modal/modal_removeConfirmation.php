@@ -8,7 +8,7 @@
           <p>Are you sure?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
         <button type="button" class="btn btn-danger" onclick="removeitemdetails()">Yes</button>
       </div>
     </div>

@@ -17,15 +17,15 @@ if($function == 'loadPieChartByDateRange')
 
 function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $from)
 {   
-  $lessTwo = date('Y-m-d', strtotime('+2 months'));
-  $lessFour = date('Y-m-d', strtotime('+4 months'));
+  
+  $lessThree = date('Y-m-d', strtotime('+3 months'));
   $lessSix = date('Y-m-d', strtotime('+6 months'));
 
   $expired = 0;
-  $lTwo = 0;
-  $lFour = 0;
+  $lThree = 0;
   $lSix = 0;
   $mSix = 0;
+  $noexpiry = 0;
 
   include ('dbcon.php');
   $date = date('Y-m-d');
@@ -34,8 +34,8 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
   {
     
       $query = "SELECT
-        ExpiryDate,
-        SUM(wms_inbound.tbl_receivingitems.Quantity)
+        LEFT(ExpiryDate, 10),
+        IFNULL(SUM(wms_inbound.tbl_receivingitems.Quantity), 0)
         FROM wms_inbound.tbl_receivingitems
         LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
         LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
@@ -43,12 +43,12 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
 
       if($searchkey == null && $searchkey == '' && $searchkey == 0)
       {
-         $query .= "WHERE CusID = $CustomerID AND ExpiryDate BETWEEN '$from' AND '$to'
+         $query .= "WHERE CusID = $CustomerID AND LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
       GROUP BY ExpiryDate";
       }
       else if(!empty($searchkey))
       {
-        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND  ExpiryDate BETWEEN '$from' AND '$to'
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
       GROUP BY ExpiryDate";
       }
 
@@ -56,30 +56,54 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
 
       while($rows = mysqli_fetch_array($res))
       {
-       if($rows[0] <= $date)
-       {
-         $expired += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessTwo)
-       {
-         $lTwo += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessFour)
-       {
-         $lFour += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessSix)
-       {
-         $lSix += $rows[1];
-       }
-       else if($rows[0] > $lessSix)
-       {
-         $mSix += $rows[1];
-       }
+           if($rows[0] <= $date)
+           {
+             $expired += $rows[1];
+           }
+           else if($rows[0] > $date && $rows[0] <= $lessThree)
+           {
+             $lThree += $rows[1];
+           }
+           else if($rows[0] > $date && $rows[0] <= $lessSix)
+           {
+             $lSix += $rows[1];
+             // $lFour = $lFour + $lTwo;
+           }
+           else if($rows[0] > $lessSix)
+           {
+             $mSix += $rows[1];
+           }
 
      }
 
-     $data[] = array($expired, $lTwo, $lFour, $lSix, $mSix);
+     $query = "SELECT
+                LEFT(ExpiryDate, 10),
+                IFNULL(SUM(wms_inbound.tbl_receivingitems.Quantity), 0)
+                FROM wms_inbound.tbl_receivingitems
+                LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
+                LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
+                ";
+
+      if($searchkey == null && $searchkey == '' && $searchkey == 0)
+      { 
+         $query .= "WHERE CusID = $CustomerID AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+      else if(!empty($searchkey))
+      {
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+
+      $res = mysqli_query($conn, $query);
+
+      while($rows = mysqli_fetch_array($res))
+      {
+          $noexpiry = $rows[1];
+      }
+
+     $lSix = $lSix + $lThree;
+     $data[] = array($expired, $lThree, $lSix, $mSix, $noexpiry);
 
      echo json_encode($data);
 
@@ -89,21 +113,21 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
   {
 
       $query = "SELECT
-        ExpiryDate,
-        SUM(wms_inbound.tbl_receivingitems.Weight)
+        LEFT(ExpiryDate, 10),
+        IFNULL(SUM(wms_inbound.tbl_receivingitems.Weight), 0)
         FROM wms_inbound.tbl_receivingitems
         LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
         LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
         ";
 
-      if(empty($searchkey))
+      if($searchkey == null && $searchkey == '' && $searchkey == 0)
       {
-        $query .= "WHERE CusID = $CustomerID AND ExpiryDate BETWEEN '$from' AND '$to'
+         $query .= "WHERE CusID = $CustomerID AND LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
       GROUP BY ExpiryDate";
       }
-      else
+      else if(!empty($searchkey))
       {
-        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND  ExpiryDate BETWEEN '$from' AND '$to'
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND  LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
       GROUP BY ExpiryDate";
       }
 
@@ -111,30 +135,54 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
 
       while($rows = mysqli_fetch_array($res))
       {
-       if($rows[0] <= $date)
-       {
-         $expired += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessTwo)
-       {
-         $lTwo += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessFour)
-       {
-         $lFour += $rows[1];
-       }
-       else if($rows[0] > $date && $rows[0] <= $lessSix)
-       {
-         $lSix += $rows[1];
-       }
-       else if($rows[0] > $lessSix)
-       {
-         $mSix += $rows[1];
-       }
+           if($rows[0] <= $date)
+           {
+             $expired += $rows[1];
+           }
+           else if($rows[0] > $date && $rows[0] <= $lessThree)
+           {
+             $lThree += $rows[1];
+           }
+           else if($rows[0] > $date && $rows[0] <= $lessSix)
+           {
+             $lSix += $rows[1];
+             // $lFour = $lFour + $lTwo;
+           }
+           else if($rows[0] > $lessSix)
+           {
+             $mSix += $rows[1];
+           }
 
      }
 
-     $data[] = array($expired, $lTwo, $lFour, $lSix, $mSix);
+     $query = "SELECT
+                LEFT(ExpiryDate, 10),
+                IFNULL(SUM(wms_inbound.tbl_receivingitems.Weight), 0)
+                FROM wms_inbound.tbl_receivingitems
+                LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
+                LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
+                ";
+
+      if($searchkey == null && $searchkey == '' && $searchkey == 0)
+      { 
+         $query .= "WHERE CusID = $CustomerID AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+      else if(!empty($searchkey))
+      {
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+
+      $res = mysqli_query($conn, $query);
+
+      while($rows = mysqli_fetch_array($res))
+      {
+          $noexpiry = $rows[1];
+      }
+
+     $lSix = $lSix + $lThree;
+     $data[] = array($expired, $lThree, $lSix, $mSix, $noexpiry);
 
      echo json_encode($data);
       
@@ -144,53 +192,78 @@ function loadPieChartByDateRange($CustomerID, $dataBarGraph, $searchkey, $to, $f
   else if(empty($dataBarGraph))
   {
       $query = "SELECT
-          ExpiryDate,
-          COUNT(Client_SKU)
-          FROM wms_inbound.tbl_receivingitems
-          LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
-          LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
-          ";
+        LEFT(ExpiryDate, 10),
+        IFNULL(SUM(wms_inbound.tbl_receivingitems.Quantity), 0)
+        FROM wms_inbound.tbl_receivingitems
+        LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
+        LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
+        ";
 
-          if(empty($searchkey))
-          {
-            $query .= "WHERE CusID = $CustomerID AND ExpiryDate BETWEEN '$from' AND '$to'
-          GROUP BY ExpiryDate";
-          }
-          else
-          {
-            $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND  ExpiryDate BETWEEN '$from' AND '$to'
-          GROUP BY ExpiryDate";
-          }
-          $res = mysqli_query($conn, $query);
+      if($searchkey == null && $searchkey == '' && $searchkey == 0)
+      {
+         $query .= "WHERE CusID = $CustomerID AND LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+      else if(!empty($searchkey))
+      {
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND  LEFT(ExpiryDate, 10) BETWEEN '$from' AND '$to' AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
 
-          while($rows = mysqli_fetch_array($res))
-          {
+      $res = mysqli_query($conn, $query);
+
+      while($rows = mysqli_fetch_array($res))
+      {
            if($rows[0] <= $date)
            {
              $expired += $rows[1];
            }
-           else if($rows[0] > $date && $rows[0] <= $lessTwo)
+           else if($rows[0] > $date && $rows[0] <= $lessThree)
            {
-             $lTwo += $rows[1];
-           }
-           else if($rows[0] > $date && $rows[0] <= $lessFour)
-           {
-             $lFour += $rows[1];
+             $lThree += $rows[1];
            }
            else if($rows[0] > $date && $rows[0] <= $lessSix)
            {
              $lSix += $rows[1];
+             // $lFour = $lFour + $lTwo;
            }
            else if($rows[0] > $lessSix)
            {
              $mSix += $rows[1];
            }
 
-         }
+     }
 
-         $data[] = array($expired, $lTwo, $lFour, $lSix, $mSix);
+     $query = "SELECT
+                LEFT(ExpiryDate, 10),
+                IFNULL(SUM(wms_inbound.tbl_receivingitems.Quantity), 0)
+                FROM wms_inbound.tbl_receivingitems
+                LEFT JOIN wms_inbound.tbl_receiving on wms_inbound.tbl_receivingitems.IBN = wms_inbound.tbl_receiving.IBN
+                LEFT JOIN wms_cloud.tbl_items on wms_inbound.tbl_receivingitems.ItemID = wms_cloud.tbl_items.ItemID
+                ";
 
-         echo json_encode($data);
+      if($searchkey == null && $searchkey == '' && $searchkey == 0)
+      { 
+         $query .= "WHERE CusID = $CustomerID AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+      else if(!empty($searchkey))
+      {
+        $query .= "WHERE CusID = $CustomerID AND wms_cloud.tbl_items.ItemID = '$searchkey' AND (ExpiryDate IS NULL OR LEFT(ExpiryDate, 10) = '0000-00-00') AND wms_inbound.tbl_receiving.StatusID = 3
+      GROUP BY ExpiryDate";
+      }
+
+      $res = mysqli_query($conn, $query);
+
+      while($rows = mysqli_fetch_array($res))
+      {
+          $noexpiry = $rows[1];
+      }
+
+     $lSix = $lSix + $lThree;
+     $data[] = array($expired, $lThree, $lSix, $mSix, $noexpiry);
+
+     echo json_encode($data);
   }
   
 }

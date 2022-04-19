@@ -1,28 +1,15 @@
-<!-- <table class="table table-bordered table-striped" width="100%">
-    <thead>
+<table class="table table-striped table-hover">
+    <thead style="background-color:#3B82F6;">
         <tr>
-            <th>#</th>
-            <td>Items</td>
-            <td>UOM</td>
-            <td>Quantity</td>
-            <td class="text-nowrap">Expiry Date</td>
-            <td>Actions</td>
+            <td class="w-50 text-white">Item Description</td>
+            <td class="text-white">Quantity</td>
+            <td class="text-white">UOM</td>
+            <td class="text-white">Weight(kg)</td>
+            <td class="text-nowrap text-white">Expiry Date</td>
+            <td class="text-center text-white">Actions</td>
         </tr>
     </thead>
     <tbody id="receivingitemsummary">
 
     </tbody>
-</table> -->
-
-<table id="receivingitemsummary" class="table table-bordered table-striped" width="100%">
-    <thead>
-        <tr>
-            <td class="w-50">Items</td>
-            <td>UOM</td>
-            <td>Quantity</td>
-            <td>Weight</td>
-            <td class="text-nowrap">Expiry Date</td>
-            <td class="text-center">Actions</td>
-        </tr>
-    </thead>
 </table>

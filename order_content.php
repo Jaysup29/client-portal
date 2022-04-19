@@ -1,48 +1,70 @@
-<div class="container-fluid p-2">
-    <div class="row g-2">
-        <div class="col-lg-4">
-            <div class="bg-white rounded shadow-sm p-2">
-                <h5 class="m-0 text-center">STORE</h5>
-            </div>
-            <div class="row mt-2 m-1" id="frm_ecommerce">
-                <div class="col-3 p-0">
-                    <p class="m-0">Control #</p>
-                </div>
-                <div class="col-5 p-0">
-                    <p class="m-0">Store name</p>
-                </div>
-                <div class="col-4 p-0">
-                    <p class="m-0 text-center">Date Ordered</p>
-                </div>
-            </div>
+<div class="container-fluid">
+  <div class="row g-2">
+    <!-- <div class="col-lg-4 col-md-12 mt-3">
+    <div class="border shadow-sm rounded" style="background-color:#3B82F6;">
+        <div class="d-flex justify-content-between">
+          <h4 class="my-1"></h4>
+          <h4 class="my-1 text-white">Store</h4>
+          <div></div>
         </div>
-        <div class="col-lg-8 m-0">
-            <div class="bg-white rounded shadow-sm p-2 mt-sm-2 mt-md-2 mt-lg-0" id="planner_section">
-                <h5 class="m-0 text-center">PLANNER</h5>
-            </div>
-            <div class="row mt-2 m-1" id="planner">
-                <div class="col p-0">
-                    <p class="m-0">OBD no.</p>
+      </div>
+      <div class="row">
+        <div class="col-12 mt-3">
+          <?php include 'order_storetable_content.php'?>
+        </div>    
+      </div>
+    </div> -->
+    <div class="col-lg-12 col-md-12 mt-3">
+      <div class="shadow-sm rounded" style="background-color:#3B82F6;">
+        <div class="row">
+          <div class="col d-flex align-items-center">
+            <a class="btn m-1 mx-2" data-bs-toggle="modal" data-bs-target="#makeorder" data-toggle="tooltip" title="Create Order"><i class="text-white fas fa-file-signature"></i></a>
+          </div>
+          <div class="col d-flex align-items-center justify-content-center">
+            <h4 class="my-1 text-white">Planner</h4>
+          </div>
+          <div class="col d-flex align-items-center justify-content-right">
+            <ul class="navbar-nav ml-auto px-3">
+              <li class="nav-item d-flex">
+                <div class="collapse fade" id="searchForm">
+                  <input id="orderlist_search" type="search" class="form-control border-0 bg-light" placeholder="search" />
                 </div>
-                <div class="col p-0">
-                    <p class="m-0">Store</p>
-                </div>
-                <div class="col p-0">
-                    <p class="m-0">Total Weight</p>
-                </div>
-                <div class="col p-0">
-                    <p class="m-0">Status</p>
-                </div>
-                <div class="col p-0">
-                    <p class="m-0">Location</p>
-                </div>
-                <div class="col p-0">
-                    <p class="m-0">Date Created</p>
-                </div>
-                <div class="col p-0">
-                    <p class="m-0 text-center">Action</p>
-                </div>
-            </div>
+                <a class="nav-link ml-auto px-2" href="#searchForm" data-target="#searchForm" data-toggle="collapse">
+                <i class="fas fa-search text-white"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
+      <div class="row">
+        <div class="col-12 mt-1">
+          <div class="container-fluid px-1" style="height: 80vh; overflow-y: scroll;" id="plannerorderview">
+            <?php include 'order_plannertable_content.php'?>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
+<script>
+$(function(){
+  getwarehouse();
+  getavailableitems();
+  order_getallitems();
+
+  setInterval(() => {
+        ORDlistTable();
+    }, 1000);
+
+});
+
+$(document).ready(function() {
+    $("#orderlist_search").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#ORDlist_table tr").filter(function() {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+});
+</script>

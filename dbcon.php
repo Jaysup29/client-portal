@@ -1,6 +1,9 @@
 
 <?php
-	$conn = mysqli_connect("127.0.0.1","root","","wms_cloud");
+	$conn = mysqli_connect('localhost','root','P@55w0rd123','wms_cloud');
+	// $conn = mysqli_con nect('localhost','root','P@55w0rd123','wms_cloud');
+	// $conn = mysqli_connect('192.168.34.28','root1','P@55w0rd123','wms_cloud');
+	// $conn = mysqli_connect("localhost","root","","wms_cloud");
 	// $conn = mysqli_connect("localhost","wms","Password123","wms_cloud");
 	// $conn = mysqli_connect("localhost","timekeeping","P@ssw0rd@123","wms_cloud");
 

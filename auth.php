@@ -1,6 +1,5 @@
 <?php
-
-  if(!isset($_SESSION["CustomerEmail"]))
+  if(!isset($_SESSION['UserID']))
   {
     header("location: login.php");
     exit;

@@ -66,11 +66,12 @@
             <table id="ageing" class="table table-bordered table-hover">
               <thead>
                 <tr>
-                  <th>Item Code</th>
+                  <th>Client SKU</th>
                   <th>Item Description</th>
 
-                  <th>UOM</th>
+                  
                   <th>Quantity</th>
+                  <th>UOM</th>
                   <th>Weight</th>
 
                   <th>CV Number</th>

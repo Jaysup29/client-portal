@@ -39,7 +39,7 @@
             <div class="p-2 bd-highlight">
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="inlineRadioOptions" id="container" value="" onclick="filteredSOH('container')">
-                <label class="form-check-label" for="inlineRadio1">Per Container</label>
+                <label class="form-check-label" for="inlineRadio1">Per CV Number</label>
               </div>
             </div>
             <div class="p-2 bd-highlight">
@@ -81,15 +81,16 @@
                   <th>Client SKU</th>
                   <th>Item Description</th>
                   <th>Quantity</th>
-                  <th>Weight</th>
                   <th>UOM</th>
-                  <th>ItemStatus</th>
-                  <th>Expiry</th>
-                  <th>Batch No.</th>
+                  <th>Weight</th>
+                  
+                  <th>Item Status</th>
+                  <th>Expiry Date</th>
+                  <th>Batch Number</th>
                   <th>Production Date</th>
                   <th>CV Number</th>
                   <th>Other Reference</th>
-                  <th>Control Number</th>
+                  <!-- <th>Control Number</th> -->
                 </tr>
               </thead>
               <tbody id="soh_body">
@@ -101,14 +102,14 @@
                 <td style="color:red; font-weight: bold;">Total</td>
                 <td style="color:red; font-weight: bold;"></td>
                 <td style="color:red; font-weight: bold;"></td>
+                <td style="color:red; font-weight: bold;"></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
-                <td></td>
+                <!-- <td></td> -->
               </tr></tfoot>
             </table>
           </div>

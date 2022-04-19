@@ -1,8 +1,99 @@
+<?php 
+    $CustomerID = $_SESSION['CustomerId'];
+
+    $start = date('Y-m-d',strtotime('last monday -7 days'));
+    $start1 = date('Y-m-d', strtotime($start. ' + 0 days'));
+    $start14 = date('Y-m-d', strtotime($start. ' + 13 days'));
+
+    include 'dbcon.php';
+    
+    $query = "CALL wms_reports.SP_inbound_dashboard_received($CustomerID, '$start1', '$start14')";
+    $result = mysqli_query($conn, $query);
+
+    while($rows = mysqli_fetch_array($result))
+    {
+        $received[] = array('rec'=>$rows[1]);
+    } 
+
+    foreach ($received as $key => $value) {
+       $receive[] = $value['rec'];
+    }
+
+    include 'dbcon.php';
+    $query = "CALL wms_reports.SP_inbound_dashboard_planned($CustomerID, '$start1', '$start14')";
+    $result = mysqli_query($conn, $query);
+
+    while($rows = mysqli_fetch_array($result))
+    {   
+        $row_date = date('M d'.','.' Y', strtotime($rows[0]));
+        $planned[] = array('plan'=>$rows[1]);
+        $dated[] = array('date'=>$row_date);
+    } 
+
+    foreach ($planned as $key => $value) {
+       $plan[] = $value['plan'];
+    }
+
+    foreach ($dated as $key => $value) {
+       $date[] = $value['date'];
+    }
+  
+    
+    $data1 = json_encode($date);
+    $received = json_encode($receive);
+    $planned = json_encode($plan);
+?>
+
+<?php 
+    $CustomerID = $_SESSION['CustomerId'];
+
+    $start = date('Y-m-d',strtotime('last monday -7 days'));
+    $start1 = date('Y-m-d', strtotime($start. ' + 0 days'));
+    $start14 = date('Y-m-d', strtotime($start. ' + 13 days'));
+
+    include 'dbcon.php';
+    
+    $query = "CALL wms_reports.SP_outbound_dashboard_undelivered($CustomerID, '$start1', '$start14')";
+    $result = mysqli_query($conn, $query);
+    // echo $query;
+    while($rows = mysqli_fetch_array($result))
+    {
+        $ordered[] = array('rec'=>$rows[1]);
+    } 
+
+    foreach ($ordered as $key => $value) {
+        $order[] = $value['rec'];
+    }
+
+
+    include 'dbcon.php';
+    
+    $query = "CALL wms_reports.SP_outbound_dashboard_delivered($CustomerID, '$start1', '$start14')";
+    $result = mysqli_query($conn, $query);
+    // echo $query;
+    while($rows = mysqli_fetch_array($result))
+    {
+        $out[] = array('del'=>$rows[1]);
+    } 
+
+    foreach ($out as $key => $value) {
+        $deliver[] = $value['del'];
+    }
+
+    $undelivered = json_encode($order);
+    $delivered = json_encode($deliver);
+
+    // echo $delivered;
+?>
+
 <script>
   $(function () {
-    // received
+
+    
+// received
+
         var receivedChartData = {
-            labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            labels  : <?php echo $data1?>,
             datasets: [
             {
               label               : 'Received',
@@ -13,7 +104,7 @@
               pointStrokeColor    : '#c1c7d1',
               pointHighlightFill  : '#fff',
               pointHighlightStroke: 'rgba(220,220,220,1)',
-              data                : [65, 59, 80, 81, 56, 55, 40, 65, 59, 80, 81, 56]
+              data                : <?php echo $received?>
             },
             {
               label               : 'Planned',
@@ -24,7 +115,7 @@
               pointStrokeColor    : 'rgba(60,141,188,1)',
               pointHighlightFill  : '#fff',
               pointHighlightStroke: 'rgba(60,141,188,1)',
-              data                : [28, 48, 40, 19, 86, 27, 90, 28, 48, 40, 19, 86]
+              data                : <?php echo $planned?>
             },
             ]
           }
@@ -60,276 +151,204 @@
           });
 
 
+          // Changed Bar Graph --------------------------------------------------------------------
+
+
           $(".change-graph").change(function()
           { 
             var dataBarGraph = $(".change-graph").val();
-            if(dataBarGraph == 'Total SO')
+            var CustomerID = $("#cus_id").val();
+            
+            // console.log(dataBarGraph);
+            if(receivedChart)
             {
-              var title = 'Total SO';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 210, 181, 156];
+                receivedChart.destroy();
+
+                $.ajax({
+                type: 'POST',
+                url: 'bargraph_ajax.php',
+                dataType: 'json',
+                data:
+                {
+                    function: 'bargraph_mainfilter_ajax', 
+                    dataBarGraph:dataBarGraph,
+                    CustomerID:CustomerID
+                },
+                success: function(data)
+                {
+                    // console.log(data);
+                    var receivedChartData = {
+                    labels  : data[0].data1,
+                    datasets: [
+                    {
+                      label               : 'Received',
+                      backgroundColor     : '#6082B6',
+                      borderColor         : 'rgba(210, 214, 222, 1)',
+                      pointRadius         : false,
+                      pointColor          : 'rgba(210, 214, 222, 1)',
+                      pointStrokeColor    : '#c1c7d1',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(220,220,220,1)',
+                      data                : data[0].data2
+                    },
+                    {
+                      label               : 'Planned',
+                      backgroundColor     : '#A7C7E7',
+                      borderColor         : 'rgba(60,141,188,0.8)',
+                      pointRadius          : false,
+                      pointColor          : '#3b8bba',
+                      pointStrokeColor    : 'rgba(60,141,188,1)',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(60,141,188,1)',
+                      data                : data[0].data3
+                    },
+                    ]
+                  }
+
+                  //-------------
+                  //- BAR CHART -
+                  //-------------
+                  var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
+                  var receivedbarChartData = $.extend(true, {}, receivedChartData)
+                  var temp0Received = receivedChartData.datasets[0]
+                  var temp1Received = receivedChartData.datasets[1]
+                  receivedbarChartData.datasets[0] = temp1Received
+                  receivedbarChartData.datasets[1] = temp0Received
+
+                  var barChartOptions = {
+                    responsive              : true,
+                    maintainAspectRatio     : false,
+                    datasetFill             : false,
+                    plugins: {
+                      datalabels: {
+                        display: false
+                      }
+                    },
+
+                  }
+             
+                  var canvas = document.getElementById("barChart");
+                  var ctx = canvas.getContext("2d");
+                    receivedChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: receivedbarChartData,
+                    options: barChartOptions
+                  });
+
+
+                }
+              
+               });
             }
-            else if(dataBarGraph == 'Total Quantity')
+          });
+
+          $('#loadSKUandDesc').change(function()
+          { 
+            var dataBarGraph = $(".change-graph").val();
+            var loadSKUandDesc = $('#loadSKUandDesc').val();
+            var CustomerID = $("#cus_id").val();
+            
+            // console.log(dataBarGraph);
+
+            if(dataBarGraph == '' || dataBarGraph == null || dataBarGraph == 'Total SO')
             {
-              var title = 'Total Quantity';
-              data1 = [145, 59, 260, 81, 112, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Weight')
-            {
-              var title = 'Total Weight';
-              data1 = [145, 59, 220, 881, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 323, 140, 165, 159, 890, 181, 456];
+              dataBarGraph = 'Total Quantity';
             }
 
             if (receivedChart)
             {
-              receivedChart.destroy();
-              var receivedChartData = {
-                  labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                  datasets: [
-                  {
-                    label               : 'Received',
-                    backgroundColor     : '#6082B6',
-                    borderColor         : 'rgba(210, 214, 222, 1)',
-                    pointRadius         : false,
-                    pointColor          : 'rgba(210, 214, 222, 1)',
-                    pointStrokeColor    : '#c1c7d1',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(220,220,220,1)',
-                    data                : data1
-                  },
-                  {
-                    label               : 'Planned',
-                    backgroundColor     : '#A7C7E7',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius          : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : data2
-                  },
-                  ]
+                receivedChart.destroy();
+
+                $.ajax({
+                type: 'POST',
+                url: 'bargraph_ajax.php',
+                dataType: 'json',
+                data:
+                {
+                    function: 'bargraph_subfilter_ajax', 
+                    dataBarGraph:dataBarGraph,
+                    loadSKUandDesc:loadSKUandDesc,
+                    CustomerID:CustomerID
+                },
+                success: function(data)
+                {
+                    // console.log(data);
+                    var receivedChartData = {
+                    labels  : data[0].data1,
+                    datasets: [
+                    {
+                      label               : 'Received',
+                      backgroundColor     : '#6082B6',
+                      borderColor         : 'rgba(210, 214, 222, 1)',
+                      pointRadius         : false,
+                      pointColor          : 'rgba(210, 214, 222, 1)',
+                      pointStrokeColor    : '#c1c7d1',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(220,220,220,1)',
+                      data                : data[0].data2
+                    },
+                    {
+                      label               : 'Planned',
+                      backgroundColor     : '#A7C7E7',
+                      borderColor         : 'rgba(60,141,188,0.8)',
+                      pointRadius          : false,
+                      pointColor          : '#3b8bba',
+                      pointStrokeColor    : 'rgba(60,141,188,1)',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(60,141,188,1)',
+                      data                : data[0].data3
+                    },
+                    ]
+                  }
+
+                  //-------------
+                  //- BAR CHART -
+                  //-------------
+                  var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
+                  var receivedbarChartData = $.extend(true, {}, receivedChartData)
+                  var temp0Received = receivedChartData.datasets[0]
+                  var temp1Received = receivedChartData.datasets[1]
+                  receivedbarChartData.datasets[0] = temp1Received
+                  receivedbarChartData.datasets[1] = temp0Received
+
+                  var barChartOptions = {
+                    responsive              : true,
+                    maintainAspectRatio     : false,
+                    datasetFill             : false,
+                    plugins: {
+                      datalabels: {
+                        display: false
+                      }
+                    },
+
+                  }
+             
+                  var canvas = document.getElementById("barChart");
+                  var ctx = canvas.getContext("2d");
+                    receivedChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: receivedbarChartData,
+                    options: barChartOptions
+                  });
+
+
                 }
-
-                //-------------
-                //- BAR CHART -
-                //-------------
-                var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
-                var receivedbarChartData = $.extend(true, {}, receivedChartData)
-                var temp0Received = receivedChartData.datasets[0]
-                var temp1Received = receivedChartData.datasets[1]
-                receivedbarChartData.datasets[0] = temp1Received
-                receivedbarChartData.datasets[1] = temp0Received
-
-                var barChartOptions = {
-                  responsive              : true,
-                  maintainAspectRatio     : false,
-                  datasetFill             : false,
-                  plugins: {
-                    datalabels: {
-                      display: false
-                    }
-                  },
-                title: 
-                  {
-                   display: true,
-                   text: title
-                }
-                }
-
-                $(document).ready( function() {
-                        receivedChart = new Chart(receivedbarChartCanvas, {
-                          type: 'bar',
-                          data: receivedbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-
+              
+               });
             }
+
 
           });
 
-          var dates = $("#date").val();
-          console.log(dates);
-          $( '#loadSKUandDesc').change(function() 
-              { 
-                
-            var dataBarGraph = $(".change-graph").val();
-            if(dataBarGraph == 'Total SO')
-            {
-              var title = 'Total SO';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 210, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Quantity')
-            {
-              var title = 'Total Quantity';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Weight')
-            {
-              var title = 'Total Weight';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else
-            {
-              var title = '';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
+// received
 
-            if (receivedChart)
-            {
-              receivedChart.destroy();
-              var receivedChartData = {
-                  labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                  datasets: [
-                  {
-                    label               : 'Received',
-                    backgroundColor     : '#6082B6',
-                    borderColor         : 'rgba(210, 214, 222, 1)',
-                    pointRadius         : false,
-                    pointColor          : 'rgba(210, 214, 222, 1)',
-                    pointStrokeColor    : '#c1c7d1',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(220,220,220,1)',
-                    data                : data1
-                  },
-                  {
-                    label               : 'Planned',
-                    backgroundColor     : '#A7C7E7',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius          : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : data2
-                  },
-                  ]
-                }
+// order
 
-                //-------------
-                //- BAR CHART -
-                //-------------
-                var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
-                var receivedbarChartData = $.extend(true, {}, receivedChartData)
-                var temp0Received = receivedChartData.datasets[0]
-                var temp1Received = receivedChartData.datasets[1]
-                receivedbarChartData.datasets[0] = temp1Received
-                receivedbarChartData.datasets[1] = temp0Received
-
-                var barChartOptions = {
-                  responsive              : true,
-                  maintainAspectRatio     : false,
-                  datasetFill             : false,
-                  plugins: {
-                    datalabels: {
-                      display: false
-                    }
-                  },
-                title: 
-                  {
-                   display: true,
-                   text: title
-                }
-                }
-
-                $(document).ready( function() {
-                        receivedChart = new Chart(receivedbarChartCanvas, {
-                          type: 'bar',
-                          data: receivedbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-
-                  }
-            });
-
-
-      function clickHandReceived(click)
-      {
-          var points = receivedChart.getElementsAtEventForMode(click, 'nearest', {intersect:true}, true);
-          if(points.length == 1) {
-              
-              var barGraph = points[0]._datasetIndex;
-              var label = points[0]._index;
-              label = label + 1;
-              $('#view_bargraph_incalendar').modal();
-
-              $('#view_bargraph_incalendar').attr('assetid');
-
-              console.log(label);
-
-              if(label == 1){ var ricksDate = new Date(2021, 0, 1); }
-                  else if(label == 2){ var ricksDate = new Date(2021, 1, 1); }
-                  else if(label == 3){ var ricksDate = new Date(2021, 2, 1); }
-                  else if(label == 4){ var ricksDate = new Date(2021, 3, 1); }
-                  else if(label == 5){ var ricksDate = new Date(2021, 4, 1); }
-                  else if(label == 6){ var ricksDate = new Date(2021, 5, 1); }
-                  else if(label == 7){ var ricksDate = new Date(2021, 6, 1); }
-                  else if(label == 8){ var ricksDate = new Date(2021, 7, 1); }
-                  else if(label == 9){ var ricksDate = new Date(2021, 8, 1); }
-                  else if(label == 10){ var ricksDate = new Date(2021, 9, 1); }
-                  else if(label == 11){ var ricksDate = new Date(2021, 10, 1); }
-                  else if(label == 12){ var ricksDate = new Date(2021, 11, 1); }
-
-              $.ajax({
-                type: "POST",
-                url: "ajax.php",
-                data: { 
-                  function: 'barChartLoadData',
-                  barGraph:barGraph,
-                  label:label,
-                  reend:reend,
-                  restart:restart
-                },
-                dataType:'text',
-                success: function(data)
-                {   
-                  console.log(data);
-                  
-                  var cal = $('#calendar').fullCalendar({
-                    header: {
-                      left: '',
-                      center: 'title',
-                      right: ''
-                    },
-                    height: 950,
-                    selectable: false,
-                    selectHelper: false,
-                    editable: false,
-                    defaultDate: ricksDate,
-                    events:'load.php' 
-                  });
-                 
-                } 
-
-              });
-
-              if(label != '' || label == 0)
-              {
-                 $('#table_data_rec').DataTable().destroy();
-                 $('#calendar').fullCalendar('destroy');
-              }
-                  
-          }
-      }
-
-      canvas.onclick = clickHandReceived;
-
-    // received
-
-    // order
-        var receivedChartData = {
-            labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        var orderChartData = {
+            labels  : <?php echo $data1?>,
             datasets: [
             {
-              label               : 'Delivered',
+              label               : 'Undelivered',
               backgroundColor     : '#DC143C',
               borderColor         : 'rgba(210, 214, 222, 1)',
               pointRadius         : false,
@@ -337,10 +356,10 @@
               pointStrokeColor    : '#c1c7d1',
               pointHighlightFill  : '#fff',
               pointHighlightStroke: 'rgba(220,220,220,1)',
-              data                : [65, 59, 80, 81, 56, 55, 40, 65, 59, 80, 81, 56]
+              data                : <?php echo $undelivered?>
             },
             {
-              label               : 'UnDelivered',
+              label               : 'Delivered',
               backgroundColor     : '#C1E1C1',
               borderColor         : 'rgba(60,141,188,0.8)',
               pointRadius          : false,
@@ -348,7 +367,7 @@
               pointStrokeColor    : 'rgba(60,141,188,1)',
               pointHighlightFill  : '#fff',
               pointHighlightStroke: 'rgba(60,141,188,1)',
-              data                : [28, 48, 40, 19, 86, 27, 90, 28, 48, 40, 19, 86]
+              data                : <?php echo $delivered?>
             },
             ]
           }
@@ -356,12 +375,12 @@
           //-------------
           //- BAR CHART -
           //-------------
-          var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
-          var receivedbarChartData = $.extend(true, {}, receivedChartData)
-          var temp0Received = receivedChartData.datasets[0]
-          var temp1Received = receivedChartData.datasets[1]
-          receivedbarChartData.datasets[0] = temp1Received
-          receivedbarChartData.datasets[1] = temp0Received
+          var orderbarChartCanvas = $('#barChart1').get(0).getContext('2d')
+          var orderbarChartData = $.extend(true, {}, orderChartData)
+          var temp0order = orderChartData.datasets[0]
+          var temp1order = orderChartData.datasets[1]
+          orderbarChartData.datasets[0] = temp1order
+          orderbarChartData.datasets[1] = temp0order
 
           var barChartOptions = {
             responsive              : true,
@@ -374,299 +393,222 @@
             },
 
           }
-
+     
           var canvas = document.getElementById("barChart1");
           var ctx = canvas.getContext("2d");
-          var orderChart = new Chart(ctx, {
+            orderChart = new Chart(ctx, {
             type: 'bar',
-            data: receivedbarChartData,
+            data: orderbarChartData,
             options: barChartOptions
           });
+
+
+          // Changed Bar Graph --------------------------------------------------------------------
 
 
           $(".change-graph").change(function()
           { 
             var dataBarGraph = $(".change-graph").val();
-            if(dataBarGraph == 'Total SO')
+            var CustomerID = $("#cus_id").val();
+            
+            // console.log(dataBarGraph + 'e');
+            if (orderChart)
             {
-              var title = 'Total SO';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 210, 181, 156];
+                orderChart.destroy();
+
+                $.ajax({
+                type: 'POST',
+                url: 'bargraph_ajax.php',
+                dataType: 'json',
+                data:
+                {
+                    function: 'bargraph_mainfilter_ajax_order', 
+                    dataBarGraph:dataBarGraph,
+                    CustomerID:CustomerID
+                },
+                success: function(data)
+                {
+                    console.log(data);
+                    var orderChartData = {
+                    labels  : data[0].data1,
+                    datasets: [
+                      {
+                        label               : 'Undelivered',
+                        backgroundColor     : '#DC143C',
+                        borderColor         : 'rgba(210, 214, 222, 1)',
+                        pointRadius         : false,
+                        pointColor          : 'rgba(210, 214, 222, 1)',
+                        pointStrokeColor    : '#c1c7d1',
+                        pointHighlightFill  : '#fff',
+                        pointHighlightStroke: 'rgba(220,220,220,1)',
+                        data                : data[0].data2,
+                      },
+                      {
+                        label               : 'Delivered',
+                        backgroundColor     : '#C1E1C1',
+                        borderColor         : 'rgba(60,141,188,0.8)',
+                        pointRadius          : false,
+                        pointColor          : '#3b8bba',
+                        pointStrokeColor    : 'rgba(60,141,188,1)',
+                        pointHighlightFill  : '#fff',
+                        pointHighlightStroke: 'rgba(60,141,188,1)',
+                        data                : data[0].data3
+                      },
+                    ]
+                  }
+
+                  //-------------
+                  //- BAR CHART -
+                  //-------------
+                  var orderbarChartCanvas = $('#barChart1').get(0).getContext('2d')
+                  var orderbarChartData = $.extend(true, {}, orderChartData)
+                  var temp0order = orderChartData.datasets[0]
+                  var temp1order = orderChartData.datasets[1]
+                  orderbarChartData.datasets[0] = temp1order
+                  orderbarChartData.datasets[1] = temp0order
+
+                  var barChartOptions = {
+                    responsive              : true,
+                    maintainAspectRatio     : false,
+                    datasetFill             : false,
+                    plugins: {
+                      datalabels: {
+                        display: false
+                      }
+                    },
+
+                  }
+             
+                  var canvas = document.getElementById("barChart1");
+                  var ctx = canvas.getContext("2d");
+                    orderChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: orderbarChartData,
+                    options: barChartOptions
+                  });
+                }
+              
+               });
             }
-            else if(dataBarGraph == 'Total Quantity')
+          });
+
+          $('#loadSKUandDesc').change(function()
+          { 
+            var dataBarGraph = $(".change-graph").val();
+            var loadSKUandDesc = $('#loadSKUandDesc').val();
+            var CustomerID = $("#cus_id").val();
+            
+            // console.log(dataBarGraph);
+
+            if(dataBarGraph == '' || dataBarGraph == null || dataBarGraph == 'Total SO')
             {
-              var title = 'Total Quantity';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Weight')
-            {
-              var title = 'Total Weight';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
+              dataBarGraph = 'Total Quantity';
             }
 
             if (orderChart)
             {
-              orderChart.destroy();
-              var receivedChartData = {
-                  labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                  datasets: [
-                  {
-                    label               : 'Delivered',
-                    backgroundColor     : '#DC143C',
-                    borderColor         : 'rgba(210, 214, 222, 1)',
-                    pointRadius         : false,
-                    pointColor          : 'rgba(210, 214, 222, 1)',
-                    pointStrokeColor    : '#c1c7d1',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(220,220,220,1)',
-                    data                : data1
-                  },
-                  {
-                    label               : 'UnDelivered',
-                    backgroundColor     : '#C1E1C1',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius          : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : data2
-                  },
-                  ]
+                orderChart.destroy();
+
+                $.ajax({
+                type: 'POST',
+                url: 'bargraph_ajax.php',
+                dataType: 'json',
+                data:
+                {
+                    function: 'bargraph_subfilter_ajax_order', 
+                    dataBarGraph:dataBarGraph,
+                    loadSKUandDesc:loadSKUandDesc,
+                    CustomerID:CustomerID
+                },
+                success: function(data)
+                {
+                    // console.log(data);
+                    var orderChartData = {
+                    labels  : data[0].data1,
+                    datasets: [
+                    {
+                      label               : 'Undelivered',
+                      backgroundColor     : '#DC143C',
+                      borderColor         : 'rgba(210, 214, 222, 1)',
+                      pointRadius         : false,
+                      pointColor          : 'rgba(210, 214, 222, 1)',
+                      pointStrokeColor    : '#c1c7d1',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(220,220,220,1)',
+                      data                : data[0].data3
+                    },
+                    {
+                      label               : 'Delivered',
+                      backgroundColor     : '#C1E1C1',
+                      borderColor         : 'rgba(60,141,188,0.8)',
+                      pointRadius          : false,
+                      pointColor          : '#3b8bba',
+                      pointStrokeColor    : 'rgba(60,141,188,1)',
+                      pointHighlightFill  : '#fff',
+                      pointHighlightStroke: 'rgba(60,141,188,1)',
+                      data                : data[0].data2
+                    },
+                    ]
+                  }
+
+                  //-------------
+                  //- BAR CHART -
+                  //-------------
+                  var orderbarChartCanvas = $('#barChart1').get(0).getContext('2d')
+                  var orderbarChartData = $.extend(true, {}, orderChartData)
+                  var temp0order = orderChartData.datasets[0]
+                  var temp1order = orderChartData.datasets[1]
+                  orderbarChartData.datasets[0] = temp1order
+                  orderbarChartData.datasets[1] = temp0order
+
+                  var barChartOptions = {
+                    responsive              : true,
+                    maintainAspectRatio     : false,
+                    datasetFill             : false,
+                    plugins: {
+                      datalabels: {
+                        display: false
+                      }
+                    },
+
+                  }
+             
+                  var canvas = document.getElementById("barChart1");
+                  var ctx = canvas.getContext("2d");
+                    orderChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: orderbarChartData,
+                    options: barChartOptions
+                  });
+
+
                 }
-
-                //-------------
-                //- BAR CHART -
-                //-------------
-                var receivedbarChartCanvas = $('#barChart1').get(0).getContext('2d')
-                var receivedbarChartData = $.extend(true, {}, receivedChartData)
-                var temp0Received = receivedChartData.datasets[0]
-                var temp1Received = receivedChartData.datasets[1]
-                receivedbarChartData.datasets[0] = temp1Received
-                receivedbarChartData.datasets[1] = temp0Received
-
-                var barChartOptions = {
-                  responsive              : true,
-                  maintainAspectRatio     : false,
-                  datasetFill             : false,
-                  plugins: {
-                    datalabels: {
-                      display: false
-                    }
-                  },
-                title: 
-                  {
-                   display: true,
-                   text: title
-                }
-                }
-
-                $(document).ready( function() {
-                        orderChart = new Chart(receivedbarChartCanvas, {
-                          type: 'bar',
-                          data: receivedbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-
+              
+               });
             }
+
 
           });
 
-          var dates = $("#date").val();
-          console.log(dates);
-          $( '#loadSKUandDesc').change(function() 
-              { 
-                
-            var dataBarGraph = $(".change-graph").val();
-            if(dataBarGraph == 'Total SO')
-            {
-              var title = 'Total SO';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 210, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Quantity')
-            {
-              var title = 'Total Quantity';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else if(dataBarGraph == 'Total Weight')
-            {
-              var title = 'Total Weight';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-            else
-            {
-              var title = '';
-              data1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-              data2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-            }
-
-            if (orderChart)
-            {
-              orderChart.destroy();
-              var receivedChartData = {
-                  labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                  datasets: [
-                  {
-                    label               : 'Delivered',
-                    backgroundColor     : '#DC143C',
-                    borderColor         : 'rgba(210, 214, 222, 1)',
-                    pointRadius         : false,
-                    pointColor          : 'rgba(210, 214, 222, 1)',
-                    pointStrokeColor    : '#c1c7d1',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(220,220,220,1)',
-                    data                : data1
-                  },
-                  {
-                    label               : 'UnDelivered',
-                    backgroundColor     : '#C1E1C1',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius          : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : data2
-                  },
-                  ]
-                }
-
-                //-------------
-                //- BAR CHART -
-                //-------------
-                var receivedbarChartCanvas = $('#barChart1').get(0).getContext('2d')
-                var receivedbarChartData = $.extend(true, {}, receivedChartData)
-                var temp0Received = receivedChartData.datasets[0]
-                var temp1Received = receivedChartData.datasets[1]
-                receivedbarChartData.datasets[0] = temp1Received
-                receivedbarChartData.datasets[1] = temp0Received
-
-                var barChartOptions = {
-                  responsive              : true,
-                  maintainAspectRatio     : false,
-                  datasetFill             : false,
-                  plugins: {
-                    datalabels: {
-                      display: false
-                    }
-                  },
-                title: 
-                  {
-                   display: true,
-                   text: title
-                }
-                }
-
-                $(document).ready( function() {
-                        orderChart = new Chart(receivedbarChartCanvas, {
-                          type: 'bar',
-                          data: receivedbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-
-            }
-        });
-
-      function clickHandOrder(click)
-      {
-          var points = orderChart.getElementsAtEventForMode(click, 'nearest', {intersect:true}, true);
-          console.log(points);
-          if(points.length == 1) {
-              
-              var barGraph = points[0]._datasetIndex;
-              var label = points[0]._index;
-              label = label + 1;
-              $('#view_bargraph_incalendar').modal();
-
-              $('#view_bargraph_incalendar').attr('assetid');
-
-              console.log(barGraph);
-
-              if(label == 1){ var ricksDate = new Date(2021, 0, 1); }
-              else if(label == 2){ var ricksDate = new Date(2021, 1, 1); }
-              else if(label == 3){ var ricksDate = new Date(2021, 2, 1); }
-              else if(label == 4){ var ricksDate = new Date(2021, 3, 1); }
-              else if(label == 5){ var ricksDate = new Date(2021, 4, 1); }
-              else if(label == 6){ var ricksDate = new Date(2021, 5, 1); }
-              else if(label == 7){ var ricksDate = new Date(2021, 6, 1); }
-              else if(label == 8){ var ricksDate = new Date(2021, 7, 1); }
-              else if(label == 9){ var ricksDate = new Date(2021, 8, 1); }
-              else if(label == 10){ var ricksDate = new Date(2021, 9, 1); }
-              else if(label == 11){ var ricksDate = new Date(2021, 10, 1); }
-              else if(label == 12){ var ricksDate = new Date(2021, 11, 1); }
-
-              $.ajax({
-                type: "POST",
-                url: "ajax.php",
-                data: { 
-                  function: 'barChartLoadData',
-                  barGraph:barGraph,
-                  label:label,
-                  reend:reend,
-                  restart:restart
-                },
-                dataType:'text',
-                success: function(data)
-                {   
-                  console.log(data);
-                  
-                  var cal = $('#calendar').fullCalendar({
-                    header: {
-                      left: '',
-                      center: 'title',
-                      right: ''
-                    },
-                    height: 950,
-                    selectable: false,
-                    selectHelper: false,
-                    editable: false,
-                    defaultDate: ricksDate,
-                    events:'loadOrder.php' 
-                  });
-                 
-                } 
-
-              });
-
-              if(label != '' || label == 0)
-              {
-                 // $('#table_data_rec').DataTable().destroy();
-                 $('#calendar').fullCalendar('destroy');
-              }
-                  
-          }
-      }
-
-      canvas.onclick = clickHandOrder;
-
-    // order
-
-
+// order
     // piechart
         var myNewChart;
         var data = {
           labels: [
           'Expired',
-          'Less Than 2 Months',
-          'Less Than 4 Months',
+          'Less Than 3 Months',
           'Less Than 6 Months',
           'More Than 6 Months',
+          'No Expiry',
           ],
           datasets: [
           {
             data: [
             <?php echo $expired ?>,
-            <?php echo $lTwo ?>,
-            <?php echo $lFour ?>,
+            <?php echo $lThree ?>,
             <?php echo $lSix ?>,
             <?php echo $mSix ?>,
+            <?php echo $noexpiry ?>,
             ],
             backgroundColor : ['#DC143C', '#f39c12', '#00c0ef', '#3c8dbc', '#00a65a'],
           }
@@ -674,34 +616,21 @@
         };
           
         var options = {
+          legend: {
+              display: false,
+          },
           tooltips: {
-            enabled: false
+               enabled: false
           },
           plugins: {
             datalabels: {
-                display: true,
-              formatter: (value, ctx) => {
-                let sum = 0;
-                let sub_total = 0;
-                let dataArr = ctx.chart.data.datasets[0].data;
-                dataArr.map(data => {
-                  sum += data;
-                });
-                // sub_total = <?php echo $lTwo ?> + <?php echo $lFour ?>;
-                // sum = sum - sub_total;
-                let percentage = (value*100 / sum).toFixed(2)+"%";
-                return percentage;
-              },
-              color: '#fff',
-              font: {
-                  size: 15,
-                  weight: 600
-              },
+               display: false
+            },
+            outlabels: {
+               display: true
             }
-          },
-            
+         }
         };
-
         var canvas = document.getElementById("pieChart");
         var ctx = canvas.getContext("2d");
         var myNewChart = new Chart(ctx, {
@@ -712,8 +641,11 @@
 
         $(".change-graph").change(function()
         {  
-          var from = start.format('YYYY-MM-DD');
-          var to = end.format('YYYY-MM-DD');
+          // var from = start.format('YYYY-MM-DD');
+          // var to = end.format('YYYY-MM-DD');
+
+          var from = '2000-01-01';
+          var to = '2030-01-01';
           var searchkey = $('#loadSKUandDesc').val();
           var dataBarGraph = $(".change-graph").val();
 
@@ -744,6 +676,7 @@
           if(myNewChart)
           {
             myNewChart.destroy();
+            console.log(to + 'e');
             $.ajax({
               type: "POST",
               url: "ageing_dashboard_dropdown.php",
@@ -759,14 +692,14 @@
               dataType:'json',
               success: function(data)
               {   
-                // console.log(data[0]);
+                console.log(data);
                 var donutData        = {
                   labels: [
-                  ' Expired',
-                  'Less Than 2 Months',
-                  'Less Than 4 Months',
+                  'Expired',
+                  'Less Than 3 Months',
                   'Less Than 6 Months',
                   'More Than 6 Months',
+                  'No Expiry',
                   ],
                   datasets: [
                   {
@@ -778,35 +711,21 @@
                 var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
                 var pieData        = donutData;
                 var options = {
-                  tooltips: {
-                    enabled: false
-                  },
-                  plugins: {
-                    datalabels: {
-                      formatter: (value, ctx) => {
-                        let sum = 0;
-                        let sub = 0;
-                        let sub_total = 0;
-                        let dataArr = ctx.chart.data.datasets[0].data;
-                        dataArr.map(data => {
-                          sum += data;
-                          
-                        });
-                        // sub = dataArr[1] + dataArr[2];
-                        // sum = sum - sub;
-                        let percentage = (value*100 / sum).toFixed(2)+"%";
-                        return percentage;
+                      legend: {
+                          display: false,
                       },
-                      color: '#fff',
-                    }
-                  },
-                  title: 
-                  {
-                  display: true,
-                  text: title
-                  // 19445 326,808
-                }
-                };
+                      tooltips: {
+                           enabled: false
+                      },
+                      plugins: {
+                        datalabels: {
+                           display: false
+                        },
+                        outlabels: {
+                           display: true
+                        }
+                     }
+                    };
 
                 $(document).ready( function() {
                   myNewChart = new Chart(pieChartCanvas, {
@@ -820,23 +739,134 @@
 
                 barGraphData = data[0];
 
-                console.log(barGraphData[1]);
+                // console.log(barGraphData);
 
 
-                var num1 =barGraphData[0];
-                var n1 = num1.toFixed(2);
+                if(dataBarGraph == 'Total SO')
+                {
+                  var num1 =barGraphData[0];
+                  var n1 = num1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num2 =barGraphData[1];
-                var n2 = num2.toFixed(2);
+                  var num2 =barGraphData[1];
+                  var n2 = num2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num3 =barGraphData[2];
-                var n3 = num3.toFixed(2);
+                  var num3 =barGraphData[2];
+                  var n3 = num3.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num4 =barGraphData[3];
-                var n4 = num4.toFixed(2);
+                  var num4 =barGraphData[3];
+                  var n4 = num4.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num5 =barGraphData[4];
-                var n5 = num5.toFixed(2);
+                  var num5 =barGraphData[4];
+                  var n5 = num5.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  percent = num1 + num2 + num3 + num4 + num5;
+
+                  var n1_per = num1/percent * 100;
+                  n1_per = n1_per.toFixed(2);
+
+                  var n2_per = num2/percent * 100;
+                  n2_per = n2_per.toFixed(2);
+
+                  var n3_per = num3/percent * 100;
+                  n3_per = n3_per.toFixed(2);
+
+                  var n4_per = num4/percent * 100;
+                  n4_per = n4_per.toFixed(2);
+
+                  var n5_per = num5/percent * 100;
+                  n5_per = n5_per.toFixed(2);
+
+                  // console.log(n5_per);
+                }
+                else if(dataBarGraph == 'Total Quantity')
+                {
+                  var num1 =barGraphData[0];
+                  var n1 = num1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  var num2 =barGraphData[1];
+                  var n2 = num2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  var num3 =barGraphData[2];
+                  var n3 = num3.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  var num4 =barGraphData[3];
+                  var n4 = num4.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  var num5 =barGraphData[4];
+                  var n5 = num5.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  percent = num1 + num2 + num3 + num4 + num5;
+
+                  var n1_per = num1/percent * 100;
+                  n1_per = n1_per.toFixed(2);
+
+                  var n2_per = num2/percent * 100;
+                  n2_per = n2_per.toFixed(2);
+
+                  var n3_per = num3/percent * 100;
+                  n3_per = n3_per.toFixed(2);
+
+                  var n4_per = num4/percent * 100;
+                  n4_per = n4_per.toFixed(2);
+
+                  var n5_per = num5/percent * 100;
+                  n5_per = n5_per.toFixed(2);
+
+                  // console.log(n5_per);
+                }
+                else if(dataBarGraph == 'Total Weight')
+                {
+                  var percent = 0;
+                  // percent = num1 + num2 + num3 + num4 + num5;
+                  var num1 =barGraphData[0];
+                  var n1 = num1.toFixed(2);
+
+                  var num2 =barGraphData[1];
+                  var n2 = num2.toFixed(2);
+
+                  var num3 =barGraphData[2];
+                  var n3 = num3.toFixed(2);
+
+                  var num4 =barGraphData[3];
+                  var n4 = num4.toFixed(2);
+
+                  var num5 =barGraphData[4];
+                  var n5 = num5.toFixed(2);
+
+                  console.log(n2);
+
+                  percent = num1 + num2 + num3 + num4 + num5;
+                  var n1_per = n1/percent * 100;
+                  n1_per = n1_per.toFixed(2);
+
+                  var n2_per = n2/percent * 100;
+                  n2_per = n2_per.toFixed(2);
+
+                  var n3_per = n3/percent * 100;
+                  n3_per = n3_per.toFixed(2);
+
+                  var n4_per = n4/percent * 100;
+                  n4_per = n4_per.toFixed(2);
+
+                  var n5_per = n5/percent * 100;
+                  n5_per = n5_per.toFixed(2);
+
+
+                  n1 = new Intl.NumberFormat().format(n1);
+                  n2 = new Intl.NumberFormat().format(n2);
+                  n3 = new Intl.NumberFormat().format(n3);
+                  n4 = new Intl.NumberFormat().format(n4);
+                  n5 = new Intl.NumberFormat().format(n5);
+                }
+
+                if(percent == 0)
+                {
+                  n1_per = 0;
+                  n2_per = 0;
+                  n3_per = 0;
+                  n4_per = 0;
+                  n5_per = 0;
+                }
 
                 $("#exp").empty();
                 $("#exp").append(n1);
@@ -850,6 +880,19 @@
                 $("#lessFour").append(n3);
                 $("#lessSix").append(n4);
                 $("#moreSix").append(n5);
+
+                $("#exp_per").empty();
+                $("#exp_per").append(n1_per + '%');
+
+                $("#lessTwo_per").empty();
+                $("#lessFour_per").empty();
+                $("#lessSix_per").empty();
+                $("#moreSix_per").empty();
+
+                $("#lessTwo_per").append(n2_per + '%');
+                $("#lessFour_per").append(n3_per + '%');
+                $("#lessSix_per").append(n4_per + '%');
+                $("#moreSix_per").append(n5_per + '%');
 
               } 
             });
@@ -893,14 +936,14 @@
               dataType:'json',
               success: function(data)
               {   
-                console.log(data[0]);
+                console.log(data);
                 var donutData        = {
                   labels: [
-                  ' Expired',
-                  'Less Than 2 Months',
-                  'Less Than 4 Months',
+                  'Expired',
+                  'Less Than 3 Months',
                   'Less Than 6 Months',
                   'More Than 6 Months',
+                  'No Expiry',
                   ],
                   datasets: [
                   {
@@ -912,26 +955,21 @@
                 var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
                 var pieData        = donutData;
                 var options = {
-                    tooltips: {
-                      enabled: false
-                    },
-                    plugins: {
-                      datalabels: {
-                        formatter: (value, ctx) => {
-                          let sum = 0;
-                          let sub_total = 0;
-                          let dataArr = ctx.chart.data.datasets[0].data;
-                          dataArr.map(data => {
-                            sum += data;
-                          });
-                          let percentage = (value*100 / sum).toFixed(2)+"%";
-                          return percentage;
+                      legend: {
+                          display: false,
+                      },
+                      tooltips: {
+                           enabled: false
+                      },
+                      plugins: {
+                        datalabels: {
+                           display: false
                         },
-                        color: '#fff',
-                      }
-                    },
-                    
-                  };
+                        outlabels: {
+                           display: true
+                        }
+                     }
+                    };
 
                 $(document).ready( function() {
                   myNewChart = new Chart(pieChartCanvas, {
@@ -945,23 +983,91 @@
 
                 barGraphData = data[0];
 
-                console.log(barGraphData[1]);
+                // console.log(barGraphData);
 
 
-                var num1 =barGraphData[0];
-                var n1 = num1.toFixed(2);
+                // if(dataBarGraph == 'Total Quantity')
+                // {
+                  var num1 =barGraphData[0];
+                  var n1 = num1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num2 =barGraphData[1];
-                var n2 = num2.toFixed(2);
+                  var num2 =barGraphData[1];
+                  var n2 = num2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num3 =barGraphData[2];
-                var n3 = num3.toFixed(2);
+                  var num3 =barGraphData[2];
+                  var n3 = num3.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num4 =barGraphData[3];
-                var n4 = num4.toFixed(2);
+                  var num4 =barGraphData[3];
+                  var n4 = num4.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-                var num5 =barGraphData[4];
-                var n5 = num5.toFixed(2);
+                  var num5 =barGraphData[4];
+                  var n5 = num5.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                  percent = num1 + num2 + num3 + num4 + num5;
+
+                  var n1_per = num1/percent * 100;
+                  n1_per = n1_per.toFixed(2);
+
+                  var n2_per = num2/percent * 100;
+                  n2_per = n2_per.toFixed(2);
+
+                  var n3_per = num3/percent * 100;
+                  n3_per = n3_per.toFixed(2);
+
+                  var n4_per = num4/percent * 100;
+                  n4_per = n4_per.toFixed(2);
+
+                  var n5_per = num5/percent * 100;
+                  n5_per = n5_per.toFixed(2);
+
+                  // console.log(percent);
+                // }
+                // else if(dataBarGraph == 'Total Weight')
+                // {
+                //   var percent = 0;
+                //   // percent = num1 + num2 + num3 + num4 + num5;
+                //   var num1 =barGraphData[0];
+                //   var n1 = num1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                //   var num2 =barGraphData[1];
+                //   var n2 = num2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                //   var num3 =barGraphData[2];
+                //   var n3 = num3.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                //   var num4 =barGraphData[3];
+                //   var n4 = num4.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                //   var num5 =barGraphData[4];
+                //   var n5 = num5.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                //   percent = num1 + num2 + num3 + num4 + num5;
+                //   var n1_per = n1/percent * 100;
+                //   n1_per = n1_per.toFixed(2);
+
+                //   var n2_per = n2/percent * 100;
+                //   n2_per = n2_per.toFixed(2);
+
+                //   var n3_per = n3/percent * 100;
+                //   n3_per = n3_per.toFixed(2);
+
+                //   var n4_per = n4/percent * 100;
+                //   n4_per = n4_per.toFixed(2);
+
+                //   var n5_per = n5/percent * 100;
+                //   n5_per = n5_per.toFixed(2);
+
+                //   console.log(percent);
+                // }
+                // console.log(n1_per);
+                if(percent == 0)
+                {
+                  n1_per = 0;
+                  n2_per = 0;
+                  n3_per = 0;
+                  n4_per = 0;
+                  n5_per = 0;
+                }
 
                 $("#exp").empty();
                 $("#exp").append(n1);
@@ -975,6 +1081,19 @@
                 $("#lessFour").append(n3);
                 $("#lessSix").append(n4);
                 $("#moreSix").append(n5);
+
+                $("#exp_per").empty();
+                $("#exp_per").append(n1_per + '%');
+
+                $("#lessTwo_per").empty();
+                $("#lessFour_per").empty();
+                $("#lessSix_per").empty();
+                $("#moreSix_per").empty();
+
+                $("#lessTwo_per").append(n2_per + '%');
+                $("#lessFour_per").append(n3_per + '%');
+                $("#lessSix_per").append(n4_per + '%');
+                $("#moreSix_per").append(n5_per + '%');
               } 
             });
           }
@@ -988,9 +1107,9 @@
 
             var label = chartData.labels[idx];
 
-            $('#view_client').modal();
+            console.log(label);
 
-            $('#view_client').attr('assetid',label);
+            
 
             var searchkey = $('#loadSKUandDesc').val();
 
@@ -1009,8 +1128,13 @@
             var from = start.format('YYYY-MM-DD');
             var to = end.format('YYYY-MM-DD');
             var dataBarGraph = $(".change-graph").val();
-            console.log(reend);
-            console.log(from);
+            var CustomerID = $('#cus_id').val();
+            // console.log(reend);
+            // console.log(from);
+
+            $('#modal_load').modal('show');
+
+
             $.ajax({
               type: "POST",
               url: "ajax.php",
@@ -1023,18 +1147,42 @@
                 from:from,
                 to:to,
                 reend:reend,
-                restart:restart
+                restart:restart,
+                CustomerID:CustomerID
               },
               dataType:'json',
               success: function(data)
               {   
-                // console.log(data);
+                // console.log(reend);
+                console.log(data);
+                console.log(searchkey);
+                $('#exampleModalLongTitle').empty();
+                $('#exampleModalLongTitle').append('List of SKU That is ' + label);
 
+                var totalWGT = $.fn.dataTable.render.number( ',', '.', 2, ''  ).display;
+                var numberRenderer = $.fn.dataTable.render.number( ',', '.', '', ''  ).display;
                 $('#table_data').DataTable({
 
                   "data": data,
                   autoWidth: false,
                   responsive: true,
+                  // dom: 'Bfrtip',
+                  buttons: [
+                        { extend: 'copyHtml5', footer: true },
+                        { extend: 'excelHtml5', footer: true },
+                        { extend: 'csvHtml5', footer: true },
+                        { extend: 'pdfHtml5', footer: true, 
+                            orientation: 'landscape',  pageSize: 'LEGAL',
+                           
+                        }
+                    ],
+                  
+                    initComplete: function () {
+                        var btns = $('.dt-button');
+                        btns.addClass('ml-2 btn btn-success btn-md');
+                        btns.removeClass('dt-button');
+
+                    },
                   "columns": [
                   {
                     "data": "sku"          
@@ -1058,12 +1206,76 @@
                     "data": "expiringInDays"          
                   }
                   ],
-                  "bPaginate": false
+                  "bPaginate": false,
 
+                  "footerCallback": function ( row, data, start, end, display ) {
+                    var api = this.api(), data;
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '')*1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+                    
+                    // Total over all pages
+                    total = api
+                        .column( 3 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+         
+                    // Total over this page
+                    pageTotal = api
+                        .column( 3, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+         
+                    // Update footer
+                    $( api.column( 3 ).footer() ).html(
+                        numberRenderer( pageTotal )
+                    );
+
+                    // Total over all pages
+                    total = api
+                        .column( 4 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+         
+                    // Total over this page
+                    pageTotal = api
+                        .column( 4, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            var num = intVal(a) + intVal(b);
+                            num = Math.round(num * 100) / 100;
+
+                            return num;
+                        }, 0 );
+         
+                    // Update footer
+                    $( api.column( 4 ).footer() ).html(
+                       totalWGT( pageTotal )
+                    );
+                  }
                 });
 
-                $('#exampleModalLongTitle').empty();
-                $('#exampleModalLongTitle').append('List of SKU of ' + label);
+                
+              },
+              complete: function()
+              {
+                  setTimeout(function() 
+                  {
+                      $('#modal_load').modal('hide');
+
+                  }, 800);
+                  $('#view_client').modal('show');
+
+                  $('#view_client').attr('assetid',label);
               } 
 
             });
@@ -1105,176 +1317,6 @@
           restart = globalThis.restart = re_start;
           reend = globalThis.reend = re_end;
 
-
-            // received
-
-              var dataBarGraph = $(".change-graph").val();
-              if(dataBarGraph == 'Total SO')
-              {
-                var title = 'Total SO';
-                recdata1 = [145, 59, 250, 81, 135, 535, 351, 165, 359, 580, 81, 556];
-                recdata2 = [145, 459, 220, 421, 236, 355, 240, 265, 259, 210, 181, 156];
-
-                orderdata1 = [145, 59, 220, 81, 142, 245, 421, 165, 459, 280, 81, 256];
-                orderdata2 = [145, 459, 220, 421, 246, 455, 140, 165, 159, 210, 181, 156];
-              }
-              else if(dataBarGraph == 'Total Quantity')
-              {
-                var title = 'Total Quantity';
-                recdata1 = [145, 59, 220, 81, 142, 235, 321, 165, 359, 280, 81, 256];
-                recdata2 = [145, 459, 220, 481, 236, 385, 140, 165, 159, 810, 181, 156];
-
-                orderdata1 = [145, 59, 280, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-                orderdata2 = [145, 459, 220, 421, 286, 355, 140, 165, 159, 210, 181, 156];
-              }
-              else if(dataBarGraph == 'Total Weight')
-              {
-                var title = 'Total Weight';
-                recdata1 = [145, 59, 220, 81, 132, 835, 321, 165, 359, 288, 81, 256];
-                recdata2 = [145, 459, 220, 421, 236, 385, 140, 165, 159, 810, 181, 156];
-
-                orderdata1 = [145, 59, 220, 81, 132, 235, 321, 185, 359, 280, 81, 256];
-                orderdata2 = [145, 459, 220, 421, 236, 355, 180, 165, 159, 210, 181, 856];
-              }
-              else
-              {
-                var title = '';
-                recdata1 = [145, 59, 220, 81, 132, 235, 321, 165, 359, 280, 81, 256];
-                recdata2 = [145, 459, 220, 421, 236, 355, 140, 165, 159, 810, 181, 156];
-
-                orderdata1 = [185, 59, 288, 81, 132, 235, 821, 165, 859, 280, 81, 256];
-                orderdata2 = [145, 459, 280, 821, 236, 355, 180, 165, 189, 210, 181, 156];
-              }
-              receivedChart.destroy();
-
-              var receivedChartData = {
-                  labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                  datasets: [
-                  {
-                    label               : 'Received',
-                    backgroundColor     : '#6082B6',
-                    borderColor         : 'rgba(210, 214, 222, 1)',
-                    pointRadius         : false,
-                    pointColor          : 'rgba(210, 214, 222, 1)',
-                    pointStrokeColor    : '#c1c7d1',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(220,220,220,1)',
-                    data                : recdata1
-                  },
-                  {
-                    label               : 'Planned',
-                    backgroundColor     : '#A7C7E7',
-                    borderColor         : 'rgba(60,141,188,0.8)',
-                    pointRadius          : false,
-                    pointColor          : '#3b8bba',
-                    pointStrokeColor    : 'rgba(60,141,188,1)',
-                    pointHighlightFill  : '#fff',
-                    pointHighlightStroke: 'rgba(60,141,188,1)',
-                    data                : recdata2
-                  },
-                  ]
-                }
-
-                //-------------
-                //- BAR CHART -
-                //-------------
-                var receivedbarChartCanvas = $('#barChart').get(0).getContext('2d')
-                var receivedbarChartData = $.extend(true, {}, receivedChartData)
-                var temp0Received = receivedChartData.datasets[0]
-                var temp1Received = receivedChartData.datasets[1]
-                receivedbarChartData.datasets[0] = temp1Received
-                receivedbarChartData.datasets[1] = temp0Received
-
-                var barChartOptions = {
-                  responsive              : true,
-                  maintainAspectRatio     : false,
-                  datasetFill             : false,
-                  plugins: {
-                    datalabels: {
-                      display: false
-                    }
-                  },
-                title: 
-                  {
-                   display: true,
-                   text: title
-                }
-                }
-
-                $(document).ready( function() {
-                        receivedChart = new Chart(receivedbarChartCanvas, {
-                          type: 'bar',
-                          data: receivedbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-            // received
-
-            // order
-                orderChart.destroy();
-                  var orderChartData = {
-                      labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-                      datasets: [
-                      {
-                        label               : 'UnDelivered',
-                        backgroundColor     : '#DC143C',
-                        borderColor         : 'rgba(210, 214, 222, 1)',
-                        pointRadius         : false,
-                        pointColor          : 'rgba(210, 214, 222, 1)',
-                        pointStrokeColor    : '#c1c7d1',
-                        pointHighlightFill  : '#fff',
-                        pointHighlightStroke: 'rgba(220,220,220,1)',
-                        data                : orderdata1
-                      },
-                      {
-                        label               : 'Delivered',
-                        backgroundColor     : '#C1E1C1',
-                        borderColor         : 'rgba(60,141,188,0.8)',
-                        pointRadius          : false,
-                        pointColor          : '#3b8bba',
-                        pointStrokeColor    : 'rgba(60,141,188,1)',
-                        pointHighlightFill  : '#fff',
-                        pointHighlightStroke: 'rgba(60,141,188,1)',
-                        data                : orderdata2
-                      },
-                      ]
-                    }
-
-                    //-------------
-                    //- BAR CHART -
-                    //-------------
-                    var orderbarChartCanvas = $('#barChart1').get(0).getContext('2d')
-                    var orderbarChartData = $.extend(true, {}, orderChartData)
-                    var temp0Order = orderChartData.datasets[0]
-                    var temp1Order = orderChartData.datasets[1]
-                    orderbarChartData.datasets[0] = temp1Order
-                    orderbarChartData.datasets[1] = temp0Order
-
-                    var barChartOptions = {
-                      responsive              : true,
-                      maintainAspectRatio     : false,
-                      datasetFill             : false,
-                      plugins: {
-                        datalabels: {
-                          display: false
-                        }
-                      },
-                    title: 
-                      {
-                       display: true,
-                       text: title
-                    }
-                    }
-
-                    $(document).ready( function() {
-                        orderChart = new Chart(orderbarChartCanvas, {
-                          type: 'bar',
-                          data: orderbarChartData,
-                          options: barChartOptions
-                        });
-                      });
-            // order
-
             // piechart
                 myNewChart.destroy();
 
@@ -1307,14 +1349,14 @@
                   dataType:'json',
                   success: function(data)
                   {   
-                    console.log(data[0]);
+                    // console.log(data[0]);
                     var donutData        = {
                       labels: [
-                      ' Expired',
-                      'Less Than 2 Months',
-                      'Less Than 4 Months',
+                      'Expired',
+                      'Less Than 3 Months',
                       'Less Than 6 Months',
                       'More Than 6 Months',
+                      'No Expiry',
                       ],
                       datasets: [
                       {
@@ -1326,28 +1368,20 @@
                     var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
                     var pieData        = donutData;
                     var options = {
+                      legend: {
+                          display: false,
+                      },
                       tooltips: {
-                        enabled: false
+                           enabled: false
                       },
                       plugins: {
                         datalabels: {
-                          formatter: (value, ctx) => {
-                            let sum = 0;
-                            let sub = 0;
-                            let sub_total = 0;
-                            let dataArr = ctx.chart.data.datasets[0].data;
-                            dataArr.map(data => {
-                              sum += data;
-                              
-                            });
-                            // sub = dataArr[1] + dataArr[2];
-                            // sum = sum - sub;
-                            let percentage = (value*100 / sum).toFixed(2)+"%";
-                            return percentage;
-                          },
-                          color: '#fff',
+                           display: false
+                        },
+                        outlabels: {
+                           display: true
                         }
-                      }
+                     }
                     };
 
                     $(document).ready( function() {
@@ -1362,23 +1396,45 @@
 
                     barGraphData = data[0];
 
-                    console.log(barGraphData[1]);
+                    // console.log(dataBarGraph);
 
 
+                    var percent = 0;
+                    // percent = num1 + num2 + num3 + num4 + num5;
                     var num1 =barGraphData[0];
-                    var n1 = num1.toFixed(2);
+                    var n1 = num1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
                     var num2 =barGraphData[1];
-                    var n2 = num2.toFixed(2);
+                    var n2 = num2.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
                     var num3 =barGraphData[2];
-                    var n3 = num3.toFixed(2);
+                    var n3 = num3.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
                     var num4 =barGraphData[3];
-                    var n4 = num4.toFixed(2);
+                    var n4 = num4.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
                     var num5 =barGraphData[4];
-                    var n5 = num5.toFixed(2);
+                    var n5 = num5.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+                    percent = num1 + num2 + num3 + num4 + num5;
+                    var n1_per = n1/percent * 100;
+                    n1_per = n1_per.toFixed(2);
+
+                    var n2_per = n2/percent * 100;
+                    n2_per = n2_per.toFixed(2);
+
+                    var n3_per = n3/percent * 100;
+                    n3_per = n3_per.toFixed(2);
+
+                    var n4_per = n4/percent * 100;
+                    n4_per = n4_per.toFixed(2);
+
+                    var n5_per = n5/percent * 100;
+                    n5_per = n5_per.toFixed(2);
+     
+
+                   
+                    
 
                     $("#exp").empty();
                     $("#exp").append(n1);
@@ -1392,8 +1448,21 @@
                     $("#lessFour").append(n3);
                     $("#lessSix").append(n4);
                     $("#moreSix").append(n5);
-                  } 
-                });
+
+                    $("#exp_per").empty();
+                    $("#exp_per").append(n1_per + '%');
+
+                    $("#lessTwo_per").empty();
+                    $("#lessFour_per").empty();
+                    $("#lessSix_per").empty();
+                    $("#moreSix_per").empty();
+
+                    $("#lessTwo_per").append(n2_per + '%');
+                    $("#lessFour_per").append(n3_per + '%');
+                    $("#lessSix_per").append(n4_per + '%');
+                    $("#moreSix_per").append(n5_per + '%');
+                      } 
+                    });
           
             // piechart
 
@@ -1406,6 +1475,9 @@
 
 
 
-  });
+});
 
 </script>
+
+
+

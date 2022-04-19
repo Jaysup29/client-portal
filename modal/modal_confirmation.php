@@ -9,8 +9,8 @@
         <h4 class="text-center mt-3">Are you sure?</h4>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-        <button type="button" class="btn btn-primary" onclick="submitASN()">Yes</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" onclick="submitreceiving()">Yes</button>
       </div>
     </div>
   </div>

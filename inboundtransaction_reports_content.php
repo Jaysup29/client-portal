@@ -45,7 +45,7 @@
 
               <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="inlineRadioOptions" id="container" value="" onclick="filteredITR('Container')">
-                <label class="form-check-label" for="inlineRadio1">Per Container</label>
+                <label class="form-check-label" for="inlineRadio1">Per CV Number</label>
               </div>
 
               <div class="form-check form-check-inline">
@@ -62,10 +62,21 @@
           </div>
 
           <div class="d-flex justify-content-center mt-2">
-            <div class="filter text-center mx-2">
-              <label>Date Range:</label>
-              <input type="text" name="daterange" class="form-control" id="itr_dates">
-            </div>
+            <div class="row">
+                  <?php
+                      date_default_timezone_set("Asia/Manila");
+                      $date = date('d-M-Y');
+                  ?>
+                  <div class="col-6">
+                      <label>From</label>
+                      <input type="date" id="datefrom" class="form-control">
+                  </div>
+                  
+                  <div class="col-6">
+                      <label>To</label>
+                      <input type="date" id="dateto" class="form-control">
+                  </div>
+              </div>
           </div>
           
           <div class="d-flex justify-content-center mt-2">
@@ -79,14 +90,14 @@
               <thead>
 
                 <tr>
-                    <th colspan="2"></th>
-                    <th colspan="3" style="text-align:center;">Item Status</th>
+                    <th colspan="3"></th>
+                    <th colspan="3" style="text-align:center;">ITEM STATUS</th>
                     <th colspan="7"></th>
                 </tr>
 
                 <tr>
                    <th>Date</th>
-                   <th>Control Number</th>
+                   <th>CPI</th>
 
                    <th>GOOD</th>
                    <th>HOLD</th>
@@ -94,8 +105,7 @@
                    <th>Quantity</th>
                    <th>Weight</th>
 
-                   <th>Container Number</th>
-                   <!-- <th>Checker Assigned</th> -->
+                   <th>CV Number</th>
 
                    <th>Status</th>
                    <th>Remarks</th>
